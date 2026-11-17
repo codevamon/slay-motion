@@ -1,133 +1,89 @@
 /**
- * Centralized SLAY asset registry.
+ * Replaceable SLAY card registry.
+ * Temporary Hungrybird case-study images — swap `src` only when finals arrive.
  *
- * STATUS: Original slot images were NOT present in
- * public/projects/slay/assets/ at project start.
- *
- * Provisional photos were cropped from the reference canvas recording
- * (see public/projects/slay/assets/PROVENANCE.txt).
- * Composed cards rebuild editorial layouts in React using those photos.
- *
- * Replace photo paths with authentic SLAY exports when available.
+ * Paths are under public/ (Remotion staticFile).
+ * Native dimensions recorded for aspect-correct layout (no stretch).
  */
 
-export type CardKind =
-  | "barcelona"
-  | "flower-pale"
-  | "numbers"
-  | "portrait-flower"
-  | "north-ave"
-  | "maple-street"
-  | "circles-74k"
-  | "meadow"
-  | "fresh"
-  | "nov-2026"
-  | "orange-bloom"
-  | "meadow-soft";
-
-export type CardAsset = {
-  id: CardKind;
-  label: string;
-  /** staticFile path under public/ */
-  photo?: string;
-  /** Design recipe rendered by EditorialCard */
-  recipe:
-    | "barcelona"
-    | "flower-pale"
-    | "numbers"
-    | "portrait-flower"
-    | "north-ave"
-    | "maple-street"
-    | "circles-74k"
-    | "meadow"
-    | "fresh"
-    | "nov-2026"
-    | "orange-bloom"
-    | "meadow-soft";
+export type SlayCard = {
+  id: string;
+  src: string;
+  nativeWidth: number;
+  nativeHeight: number;
 };
 
-const P = "projects/slay/assets/photos";
+const DIR = "projects/slay/assets/cards";
 
 /**
- * Slot order reconstructed from reference chronology (bottom-up feed).
- * Verified identities from canvas frames; order inferred from flick sequence.
+ * Deterministic mapping: sorted case-study filenames → sequence slots.
+ * Slot names describe the prototype sequence; images are approved placeholders.
  */
-export const CARD_SLOTS: CardAsset[] = [
+export const SLAY_CARDS: SlayCard[] = [
   {
     id: "barcelona",
-    label: "BARCELONA",
-    recipe: "barcelona",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-08-scaled.jpg`,
+    nativeWidth: 2400,
+    nativeHeight: 1509,
   },
   {
-    id: "flower-pale",
-    label: "Pale flower",
-    photo: `${P}/flower-pale.png`,
-    recipe: "flower-pale",
+    id: "botanical",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-09-scaled.jpg`,
+    nativeWidth: 1856,
+    nativeHeight: 2400,
   },
   {
-    id: "numbers",
-    label: "0034 / 0095",
-    recipe: "numbers",
-  },
-  {
-    id: "portrait-flower",
-    label: "Portrait + emblem",
-    photo: `${P}/portrait.png`,
-    recipe: "portrait-flower",
+    id: "flower",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-11.1-scaled.jpg`,
+    nativeWidth: 1857,
+    nativeHeight: 2400,
   },
   {
     id: "north-ave",
-    label: "north ave",
-    photo: `${P}/meadow-wide.png`,
-    recipe: "north-ave",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-11.2-scaled.jpg`,
+    nativeWidth: 1801,
+    nativeHeight: 2400,
   },
   {
     id: "maple-street",
-    label: "Maple Street",
-    photo: `${P}/orange-flower.png`,
-    recipe: "maple-street",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-12-scaled.jpg`,
+    nativeWidth: 2400,
+    nativeHeight: 1429,
   },
   {
-    id: "circles-74k",
-    label: "74K circles",
-    photo: `${P}/circles-graphic.png`,
-    recipe: "circles-74k",
-  },
-  {
-    id: "meadow",
-    label: "Meadow soft",
-    photo: `${P}/meadow-soft.png`,
-    recipe: "meadow",
+    id: "arches",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-13.1.jpg`,
+    nativeWidth: 1080,
+    nativeHeight: 1396,
   },
   {
     id: "fresh",
-    label: "FRESH",
-    recipe: "fresh",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-13.2-scaled.jpg`,
+    nativeWidth: 1856,
+    nativeHeight: 2400,
   },
   {
     id: "nov-2026",
-    label: "2026 NOV",
-    photo: `${P}/meadow-nov.png`,
-    recipe: "nov-2026",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-14-scaled.jpg`,
+    nativeWidth: 2400,
+    nativeHeight: 1430,
   },
   {
-    id: "orange-bloom",
-    label: "Orange bloom",
-    photo: `${P}/orange-flower.png`,
-    recipe: "orange-bloom",
-  },
-  {
-    id: "meadow-soft",
-    label: "Meadow reprise",
-    photo: `${P}/meadow-soft.png`,
-    recipe: "meadow-soft",
+    id: "wildflowers",
+    src: `${DIR}/CaseStudies-Hungrybird-Web_HB-Casestudy-16-scaled.jpg`,
+    nativeWidth: 2400,
+    nativeHeight: 1430,
   },
 ];
 
-export const SLOT_IDS = CARD_SLOTS.map((c) => c.id);
+export const getCardById = (id: string): SlayCard => {
+  const card = SLAY_CARDS.find((c) => c.id === id);
+  if (!card) {
+    throw new Error(`Unknown SLAY card id: ${id}`);
+  }
+  return card;
+};
 
-export const MISSING_ORIGINAL_ASSETS = [
-  "Original animos Media Slot 1–12 image uploads (authentic SLAY designs)",
-  "Any master PSD/Figma card exports used to build the showcase",
-  "Brand fonts if custom (currently system / CSS fallbacks approximating reference)",
-] as const;
+/** Aspect ratio width/height for layout. */
+export const cardAspect = (card: SlayCard) =>
+  card.nativeWidth / card.nativeHeight;

@@ -1,8 +1,8 @@
 import React from "react";
-import {MotionCanvas} from "./components/MotionCanvas";
+import {FeedCanvas} from "./components/FeedCanvas";
 
 export const SLAY_MotionFilm_001: React.FC = () => {
-  return <MotionCanvas />;
+  return <FeedCanvas />;
 };
 
 export {
@@ -12,5 +12,5 @@ export {
   FPS,
   DURATION_IN_FRAMES,
   BACKGROUND,
-  FEED,
+  FEED_CONFIG,
 } from "./config";
