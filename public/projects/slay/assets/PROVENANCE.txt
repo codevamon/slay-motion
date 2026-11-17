@@ -1,0 +1,5 @@
+PROVISIONAL ASSETS
+Extracted from references/slay-reference.mov canvas crops on 2026-11-17.
+These are NOT original SLAY source files — they are temporary reconstruction stand-ins
+cropped from the animos.app screen recording until authentic slot images are supplied.
+Replace files in public/projects/slay/assets/cards/ with original exports.
