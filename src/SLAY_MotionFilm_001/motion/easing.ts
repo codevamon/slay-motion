@@ -1,11 +1,13 @@
 import {Easing} from "remotion";
 
 /**
- * Candidate for shared feed progress modulation.
- * Active feed uses constant velocity for continuous stream feel;
- * this curve is available if a global ease layer is needed later.
+ * Lenis-like scroll impulse — decisive accel, soft settle.
+ * Applied only to virtual scrollY, never per-card.
  */
-export const editorialEase = Easing.bezier(0.45, 0.0, 0.55, 1.0);
+export const smoothScrollEase = Easing.bezier(0.76, 0.0, 0.24, 1.0);
 
-/** Alias from Phase 01.2 spec. */
-export const smoothTravel = editorialEase;
+/** Softer alternative if smoothScrollEase feels too stoppy. */
+export const gentleScrollEase = Easing.bezier(0.45, 0.0, 0.55, 1.0);
+
+/** Active curve for Phase 01.3 impulses. */
+export const scrollEase = smoothScrollEase;

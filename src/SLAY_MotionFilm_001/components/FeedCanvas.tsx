@@ -1,17 +1,25 @@
 import React from "react";
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from "remotion";
 import {BACKGROUND} from "../config";
-import {getFeedCardStates} from "../motion/feedMotion";
+import {
+  buildScrollStops,
+  getLayout,
+  getScrollPosition,
+  getVisibleDocCards,
+} from "../scrollTimeline";
 import {FeedCard} from "./FeedCard";
 
 /**
- * Fixed pink canvas. Square corners (cornerRadiusPercent: 0).
- * Cards clipped to canvas; background never moves.
+ * Fixed pink canvas + virtual camera through the editorial document.
+ * All motion comes from shared scrollY — cards stay fixed in document space.
  */
 export const FeedCanvas: React.FC = () => {
   const frame = useCurrentFrame();
-  const {fps, width, height} = useVideoConfig();
-  const cards = getFeedCardStates(frame, fps, width, height);
+  const {height} = useVideoConfig();
+  const layout = getLayout();
+  const stops = buildScrollStops(layout);
+  const scrollY = getScrollPosition(frame, stops);
+  const visible = getVisibleDocCards(scrollY, layout, height);
 
   return (
     <AbsoluteFill
@@ -20,8 +28,12 @@ export const FeedCanvas: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      {cards.map((state) => (
-        <FeedCard key={state.key} state={state} />
+      {visible.map((card) => (
+        <FeedCard
+          key={card.id}
+          card={card}
+          screenY={card.y - scrollY}
+        />
       ))}
     </AbsoluteFill>
   );

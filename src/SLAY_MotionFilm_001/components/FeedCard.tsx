@@ -1,26 +1,29 @@
 import React from "react";
 import {Img, staticFile} from "remotion";
-import type {FeedCardState} from "../motion/feedMotion";
+import type {DocCard} from "../layout";
 
 /**
- * Single editorial image card — absolute layer, transform via left/top.
- * No borders, shadows, fades, scale, or rotation.
+ * Document-space card projected to screen via shared scroll.
+ * No per-card opacity/scale/rotation/X animation.
  */
-export const FeedCard: React.FC<{state: FeedCardState}> = ({state}) => {
+export const FeedCard: React.FC<{
+  card: DocCard;
+  screenY: number;
+}> = ({card, screenY}) => {
   return (
     <div
       style={{
         position: "absolute",
-        left: state.x,
-        top: state.y,
-        width: state.width,
-        height: state.height,
-        zIndex: state.zIndex,
+        left: card.x,
+        top: screenY,
+        width: card.width,
+        height: card.height,
+        zIndex: card.zIndex,
         overflow: "hidden",
       }}
     >
       <Img
-        src={staticFile(state.src)}
+        src={staticFile(card.src)}
         style={{
           width: "100%",
           height: "100%",

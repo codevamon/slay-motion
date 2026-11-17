@@ -1,6 +1,5 @@
 /**
- * SLAY-MotionFilm-001 — centralized Feed Scroll configuration.
- * Values from Animos Feed Scroll reference / Phase 01.1–01.2 spec.
+ * SLAY-MotionFilm-001 — Phase 01.3 virtual editorial page config.
  */
 
 export const COMPOSITION_ID = "SLAY-MotionFilm-001";
@@ -12,20 +11,23 @@ export const FEED_CONFIG = {
   durationInFrames: 540,
   loopDurationSeconds: 18,
   backgroundColor: "#F6C5D9",
+  /** Horizontal padding (~6% of width). */
   paddingPercent: 6,
   cornerRadiusPercent: 0,
-  cardSizePercent: 52,
-  spacingPercent: 70,
+  /** Card width as % of canvas width (48–52 range). */
+  cardSizePercent: 50,
+  /**
+   * Vertical progression: nextY = prevY + prevHeight * verticalStep.
+   * Calibrated for readable separation with zigzag (not conveyor pile).
+   */
+  verticalStep: 0.7,
+  /** Left card: left edge as fraction of canvas width. */
+  leftEdge: 0.09,
+  /** Right card: right edge as fraction of canvas width. */
+  rightEdge: 0.91,
+  /** Viewport top margin when framing a focused card. */
+  viewTopMargin: 0.1,
 } as const;
-
-/** Card center X as a fraction of canvas width (calibration starting points). */
-export const HORIZONTAL_ANCHORS = {
-  left: 0.34,
-  center: 0.5,
-  right: 0.66,
-} as const;
-
-export type AnchorName = keyof typeof HORIZONTAL_ANCHORS;
 
 export const WIDTH = FEED_CONFIG.width;
 export const HEIGHT = FEED_CONFIG.height;
