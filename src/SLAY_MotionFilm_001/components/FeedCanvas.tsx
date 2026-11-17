@@ -1,6 +1,6 @@
 import React from "react";
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from "remotion";
-import {BACKGROUND} from "../config";
+import {BACKGROUND, FEED_CONFIG} from "../config";
 import {
   buildScrollStops,
   getLayout,
@@ -10,8 +10,8 @@ import {
 import {FeedCard} from "./FeedCard";
 
 /**
- * Fixed pink canvas + virtual camera through the editorial document.
- * All motion comes from shared scrollY — cards stay fixed in document space.
+ * Virtual document + approved Lenis-like scroll.
+ * Cards: fixed 16:9 document geometry + scroll-triggered fade-up reveal.
  */
 export const FeedCanvas: React.FC = () => {
   const frame = useCurrentFrame();
@@ -21,6 +21,9 @@ export const FeedCanvas: React.FC = () => {
   const scrollY = getScrollPosition(frame, stops);
   const visible = getVisibleDocCards(scrollY, layout, height);
 
+  // Opening: cards already above the reveal-end threshold are fully established.
+  const revealEndY = height * FEED_CONFIG.revealEndY;
+
   return (
     <AbsoluteFill
       style={{
@@ -28,13 +31,20 @@ export const FeedCanvas: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      {visible.map((card) => (
-        <FeedCard
-          key={card.id}
-          card={card}
-          screenY={card.y - scrollY}
-        />
-      ))}
+      {visible.map((card) => {
+        const screenY = card.y - scrollY;
+        const forceRevealed = frame === 0 && screenY <= revealEndY;
+
+        return (
+          <FeedCard
+            key={card.id}
+            card={card}
+            screenY={screenY}
+            viewportHeight={height}
+            forceRevealed={forceRevealed}
+          />
+        );
+      })}
     </AbsoluteFill>
   );
 };

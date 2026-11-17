@@ -1,22 +1,22 @@
-import {getCardById, type SlayCard} from "./assets";
-import {FEED_CONFIG} from "./config";
+import {SLAY_CARDS, getCardById} from "./assets";
+import {FEED_CONFIG, getCardMetrics} from "./config";
 
-export type Side = "left" | "right";
+export type HorizontalPosition = "left" | "center" | "right";
 
 /**
- * Zigzag sides — deliberate consecutive same-side placements (not rigid checkerboard).
+ * Infinite zigzag: LEFT → CENTER → RIGHT → CENTER → …
+ * Uses globalCardIndex (not asset index) so the pattern continues across loops.
+ * Nine assets are not divisible by 4 — card 10 (index 9) must be CENTER.
  */
-export const CARD_LAYOUT: {id: string; side: Side}[] = [
-  {id: "barcelona", side: "left"},
-  {id: "botanical", side: "right"},
-  {id: "flower", side: "right"},
-  {id: "north-ave", side: "left"},
-  {id: "maple-street", side: "left"},
-  {id: "arches", side: "right"},
-  {id: "fresh", side: "left"},
-  {id: "nov-2026", side: "right"},
-  {id: "wildflowers", side: "left"},
-];
+export const getHorizontalPosition = (
+  globalCardIndex: number,
+): HorizontalPosition => {
+  const phase = ((globalCardIndex % 4) + 4) % 4;
+  if (phase === 0) return "left";
+  if (phase === 1) return "center";
+  if (phase === 2) return "right";
+  return "center";
+};
 
 export type DocCard = {
   id: string;
@@ -28,96 +28,104 @@ export type DocCard = {
   height: number;
   zIndex: number;
   cycle: number;
+  globalIndex: number;
 };
 
 export type DocumentLayout = {
   cards: DocCard[];
-  /** Height of one full 9-card page (for loop wrapping). */
   pageHeight: number;
+  cardWidth: number;
+  cardHeight: number;
+  leftX: number;
+  centerX: number;
+  rightX: number;
+  verticalStepPx: number;
 };
 
-const cardSize = (asset: SlayCard, canvasWidth: number) => {
-  const width = canvasWidth * (FEED_CONFIG.cardSizePercent / 100);
-  const aspect = asset.nativeWidth / asset.nativeHeight;
-  const height = width / aspect;
-  return {width, height};
-};
-
-const cardX = (side: Side, cardWidth: number, canvasWidth: number) => {
-  if (side === "left") {
-    return canvasWidth * FEED_CONFIG.leftEdge;
-  }
-  return canvasWidth * FEED_CONFIG.rightEdge - cardWidth;
+const xForPosition = (
+  position: HorizontalPosition,
+  metrics: ReturnType<typeof getCardMetrics>,
+) => {
+  if (position === "left") return metrics.leftX;
+  if (position === "right") return metrics.rightX;
+  return metrics.centerX;
 };
 
 /**
- * Build one page of document-space cards with zigzag + 70% vertical step.
+ * Build document cards for one asset cycle.
+ * globalIndexBase continues the zigzag across repeated pages.
  */
 export const buildPageCards = (
   canvasWidth: number,
   cycle: number,
   yOffset: number,
+  globalIndexBase: number,
 ): DocCard[] => {
+  const metrics = getCardMetrics(canvasWidth);
   const cards: DocCard[] = [];
-  let y = yOffset + canvasWidth * (FEED_CONFIG.paddingPercent / 100) * 0.5;
+  let y = yOffset + metrics.horizontalPadding * 0.35;
 
-  CARD_LAYOUT.forEach((slot, index) => {
-    const asset = getCardById(slot.id);
-    const {width, height} = cardSize(asset, canvasWidth);
-    const x = cardX(slot.side, width, canvasWidth);
+  SLAY_CARDS.forEach((_slot, localIndex) => {
+    const globalIndex = globalIndexBase + localIndex;
+    // JS % is signed — normalize so preceding cycles resolve correctly.
+    const n = SLAY_CARDS.length;
+    const assetIndex = ((globalIndex % n) + n) % n;
+    const asset = getCardById(SLAY_CARDS[assetIndex].id);
+    const position = getHorizontalPosition(globalIndex);
+    const x = xForPosition(position, metrics);
 
     cards.push({
-      id: `${slot.id}__c${cycle}`,
-      assetId: slot.id,
+      id: `${asset.id}__g${globalIndex}`,
+      assetId: asset.id,
       src: asset.src,
       x,
       y,
-      width,
-      height,
-      zIndex: index + cycle * CARD_LAYOUT.length,
+      width: metrics.cardWidth,
+      height: metrics.cardHeight,
+      zIndex: globalIndex,
       cycle,
+      globalIndex,
     });
 
-    // Same-side pairs need more run-out; opposite sides can share a shallow overlap zone.
-    const prevSide = CARD_LAYOUT[index]?.side;
-    const nextSide = CARD_LAYOUT[index + 1]?.side;
-    const sameSide = Boolean(nextSide && nextSide === prevSide);
-    const step = sameSide
-      ? Math.max(FEED_CONFIG.verticalStep, 0.9)
-      : FEED_CONFIG.verticalStep;
-    y += height * step;
+    y += metrics.verticalStepPx;
   });
 
   return cards;
 };
 
 export const buildDocumentLayout = (
-  canvasWidth = FEED_CONFIG.width,
+  canvasWidth: number = FEED_CONFIG.width,
 ): DocumentLayout => {
-  // Measure page height from a dry run
-  const probe = buildPageCards(canvasWidth, 0, 0);
-  const last = probe[probe.length - 1];
+  const metrics = getCardMetrics(canvasWidth);
   const pageHeight =
-    last.y + last.height + canvasWidth * (FEED_CONFIG.paddingPercent / 100);
+    metrics.horizontalPadding * 0.35 +
+    SLAY_CARDS.length * metrics.verticalStepPx +
+    metrics.horizontalPadding;
 
-  // Two cycles for seamless loop scrolling into the next page
+  // Preceding + current + following pages for seamless loop viewport coverage.
+  // Cycle -1: globalIndexBase -9; cycle 0: 0; cycle 1: 9 (next zigzag continues).
   const cards = [
-    ...buildPageCards(canvasWidth, 0, 0),
-    ...buildPageCards(canvasWidth, 1, pageHeight),
+    ...buildPageCards(canvasWidth, -1, -pageHeight, -SLAY_CARDS.length),
+    ...buildPageCards(canvasWidth, 0, 0, 0),
+    ...buildPageCards(canvasWidth, 1, pageHeight, SLAY_CARDS.length),
   ];
 
-  return {cards, pageHeight};
+  return {
+    cards,
+    pageHeight,
+    cardWidth: metrics.cardWidth,
+    cardHeight: metrics.cardHeight,
+    leftX: metrics.leftX,
+    centerX: metrics.centerX,
+    rightX: metrics.rightX,
+    verticalStepPx: metrics.verticalStepPx,
+  };
 };
 
-/** ScrollY that frames a document card near the top of the viewport. */
 export const viewScrollForCard = (
   card: DocCard,
   viewportHeight: number = FEED_CONFIG.height,
-) => {
-  return card.y - viewportHeight * FEED_CONFIG.viewTopMargin;
-};
+) => card.y - viewportHeight * FEED_CONFIG.viewTopMargin;
 
-/** Stable lookup of cycle-0 cards by asset id order. */
 export const getPrimaryPageCards = (layout: DocumentLayout) =>
   layout.cards.filter((c) => c.cycle === 0);
-
