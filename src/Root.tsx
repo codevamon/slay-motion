@@ -3,12 +3,20 @@ import {Composition} from "remotion";
 import {MyComposition} from "./Composition";
 import {
   SLAY_MotionFilm_001,
-  COMPOSITION_ID,
-  WIDTH,
-  HEIGHT,
-  FPS,
-  DURATION_IN_FRAMES,
+  COMPOSITION_ID as SLAY_001_ID,
+  WIDTH as SLAY_001_WIDTH,
+  HEIGHT as SLAY_001_HEIGHT,
+  FPS as SLAY_001_FPS,
+  DURATION_IN_FRAMES as SLAY_001_DURATION,
 } from "./SLAY_MotionFilm_001";
+import {
+  SLAY_MotionFilm_002,
+  COMPOSITION_ID as SLAY_002_ID,
+  WIDTH as SLAY_002_WIDTH,
+  HEIGHT as SLAY_002_HEIGHT,
+  FPS as SLAY_002_FPS,
+  DURATION_IN_FRAMES as SLAY_002_DURATION,
+} from "./SLAY_MotionFilm_002";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -16,12 +24,21 @@ export const RemotionRoot: React.FC = () => {
       <MyComposition />
 
       <Composition
-        id={COMPOSITION_ID}
+        id={SLAY_001_ID}
         component={SLAY_MotionFilm_001}
-        durationInFrames={DURATION_IN_FRAMES}
-        fps={FPS}
-        width={WIDTH}
-        height={HEIGHT}
+        durationInFrames={SLAY_001_DURATION}
+        fps={SLAY_001_FPS}
+        width={SLAY_001_WIDTH}
+        height={SLAY_001_HEIGHT}
+      />
+
+      <Composition
+        id={SLAY_002_ID}
+        component={SLAY_MotionFilm_002}
+        durationInFrames={SLAY_002_DURATION}
+        fps={SLAY_002_FPS}
+        width={SLAY_002_WIDTH}
+        height={SLAY_002_HEIGHT}
       />
     </>
   );
