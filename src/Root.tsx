@@ -65,6 +65,14 @@ import {
   FPS as SLAY_008_FPS,
   DURATION_IN_FRAMES as SLAY_008_DURATION,
 } from "./SLAY_MotionFilm_008";
+import {
+  SLAY_MotionFilm_009,
+  COMPOSITION_ID as SLAY_009_ID,
+  WIDTH as SLAY_009_WIDTH,
+  HEIGHT as SLAY_009_HEIGHT,
+  FPS as SLAY_009_FPS,
+  DURATION_IN_FRAMES as SLAY_009_DURATION,
+} from "./SLAY_MotionFilm_009";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -141,6 +149,15 @@ export const RemotionRoot: React.FC = () => {
         fps={SLAY_008_FPS}
         width={SLAY_008_WIDTH}
         height={SLAY_008_HEIGHT}
+      />
+
+      <Composition
+        id={SLAY_009_ID}
+        component={SLAY_MotionFilm_009}
+        durationInFrames={SLAY_009_DURATION}
+        fps={SLAY_009_FPS}
+        width={SLAY_009_WIDTH}
+        height={SLAY_009_HEIGHT}
       />
     </>
   );
