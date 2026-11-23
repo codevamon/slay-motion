@@ -206,19 +206,35 @@ export const getFeaturedSettleDiagnostics = (
     const reveal = getRevealState(frame.top, viewportHeight, false);
     const topRatio = frame.top / viewportHeight;
 
+    // Neighbor (next card) prominence at this settle — should stay subdued.
+    const next =
+      stop.globalIndex < CARD_PERIOD
+        ? getCardByGlobalIndex(layout, stop.globalIndex + 1)
+        : null;
+    const nextFrame = next
+      ? getCardScreenFrame(next, stop.scrollY, viewportHeight)
+      : null;
+    const nextReveal = nextFrame
+      ? getRevealState(nextFrame.top, viewportHeight, false)
+      : null;
+
     return {
       label: stop.label,
       globalIndex: stop.globalIndex,
       settleFrame: stop.frame,
       top: frame.top,
       bottom: frame.bottom,
+      idealTop: frame.idealTop,
+      centerErrorPx: frame.centerErrorPx,
       topRatio,
       fullyVisible: frame.fullyVisible,
+      centeredWithin10px: frame.centeredWithin10px,
       opacity: reveal.opacity,
       revealTranslate: reveal.translateY,
       opacityComplete: reveal.opacity >= 0.999,
       revealSettled: Math.abs(reveal.translateY) < 0.5,
-      topInBand: topRatio >= 0.2 && topRatio <= 0.3,
+      nextOpacity: nextReveal?.opacity ?? null,
+      nextSubdued: nextReveal ? nextReveal.opacity < 0.35 : true,
     };
   });
 };
@@ -272,7 +288,8 @@ export const getLoopDiagnostics = (layout: DocumentLayout = getLayout()) => {
     allFeaturedFullyVisible: settles.every((s) => s.fullyVisible),
     allFeaturedOpaque: settles.every((s) => s.opacityComplete),
     allFeaturedRevealSettled: settles.every((s) => s.revealSettled),
-    allFeaturedTopInBand: settles.every((s) => s.topInBand),
+    allFeaturedCentered: settles.every((s) => s.centeredWithin10px),
+    allNeighborsSubdued: settles.every((s) => s.nextSubdued),
     velocity,
     settles,
   };

@@ -1,6 +1,6 @@
 /**
- * SLAY-MotionFilm-007 — Phase 07.
- * Faster fade-up + explicit featured-card framing.
+ * SLAY-MotionFilm-007 — refined.
+ * Exact centered featured stops + contain image framing + delayed neighbor reveal.
  * Layout, overlap, Lenis rhythm, and loop preserved from approved 006.
  */
 
@@ -10,6 +10,13 @@ export const CARD_ASPECT_RATIO = 16 / 9;
 
 /** ~16% vertical bounding-box overlap — preserved from 006. */
 export const CARD_VERTICAL_STEP_RATIO = 0.84;
+
+/**
+ * Cream fill behind object-fit:contain.
+ * Source images are ~1.60 AR inside a 16:9 frame → side letterboxing.
+ * Matches SLAY card cream (not black).
+ */
+export const CARD_IMAGE_FILL = "#FBF6F0";
 
 export const FEED_CONFIG = {
   width: 1920,
@@ -25,23 +32,18 @@ export const FEED_CONFIG = {
   verticalStep: CARD_VERTICAL_STEP_RATIO,
   viewTopMargin: 0.1,
   /**
-   * Featured-card framing: top edge at 24% of viewport
-   * (within the approved 20–30% band; full card stays inside).
-   * Equals geometric center for current 16:9 card size.
+   * Reveal during the featured card's own approach — not while it is still
+   * the "next" neighbor of a previous settle.
+   *
+   * At previous settle, next card top ≈ 0.677·H → still below revealStart → opacity 0.
+   * Quick 12% fade as it rises; finishes before geometric center (~0.24·H).
    */
-  featuredCardTopRatio: 0.24,
-  /**
-   * Phase 07 — faster, more confident reveal.
-   * Was 0.76→0.52 (24% of viewport). Now 0.80→0.68 (12%).
-   * Opacity hits 1 well before the featured settle.
-   */
-  revealStartY: 0.8,
-  revealEndY: 0.68,
-  /** Subtle rise — reduced from 55px. */
+  revealStartY: 0.64,
+  revealEndY: 0.52,
+  /** Subtle rise — kept brief. */
   revealTranslatePx: 35,
   /**
    * Brief settle after each Lenis impulse (~6 frames).
-   * Within the 4–8 frame hold target; was 0.17s / 5f in 006.
    */
   settleSec: 0.2,
   /** Uniform gesture interval — preserved from 006. */
@@ -63,6 +65,8 @@ export const getCardMetrics = (canvasWidth: number = FEED_CONFIG.width) => {
   const rightX = canvasWidth - horizontalPadding - cardWidth;
   const verticalStepPx = cardHeight * FEED_CONFIG.verticalStep;
   const overlapRatio = 1 - FEED_CONFIG.verticalStep;
+  /** Exact vertical center for featured-card framing. */
+  const featuredCardTop = (FEED_CONFIG.height - cardHeight) / 2;
 
   return {
     cardWidth,
@@ -73,5 +77,6 @@ export const getCardMetrics = (canvasWidth: number = FEED_CONFIG.width) => {
     rightX,
     verticalStepPx,
     overlapRatio,
+    featuredCardTop,
   };
 };

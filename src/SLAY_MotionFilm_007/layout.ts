@@ -144,19 +144,16 @@ export const buildDocumentLayout = (
 };
 
 /**
- * Scroll destination for a featured card.
- * Uses a consistent top-edge ratio (20–30% band) so the full card is inside
- * the viewport at settle. Gesture distance stays one verticalStep (offset cancels).
+ * Exact centered scroll destination for a featured card.
+ * targetCardTop = (viewportHeight - cardHeight) / 2
+ * Gesture distance stays one verticalStep (constant offset cancels).
  */
 export const viewScrollForCard = (
   card: DocCard,
   viewportHeight: number = FEED_CONFIG.height,
 ) => {
-  const targetCardTop = viewportHeight * FEED_CONFIG.featuredCardTopRatio;
-  // Guard: keep the full card inside the viewport.
-  const maxTop = Math.max(0, viewportHeight - card.height);
-  const clampedTop = Math.min(Math.max(0, targetCardTop), maxTop);
-  return card.y - clampedTop;
+  const targetCardTop = (viewportHeight - card.height) / 2;
+  return card.y - targetCardTop;
 };
 
 /** Screen-space framing of a card at a given scrollY. */
@@ -167,10 +164,14 @@ export const getCardScreenFrame = (
 ) => {
   const top = card.y - scrollY;
   const bottom = top + card.height;
+  const idealTop = (viewportHeight - card.height) / 2;
   return {
     top,
     bottom,
+    idealTop,
+    centerErrorPx: Math.abs(top - idealTop),
     fullyVisible: top >= -0.5 && bottom <= viewportHeight + 0.5,
+    centeredWithin10px: Math.abs(top - idealTop) <= 10,
   };
 };
 

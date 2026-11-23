@@ -1,6 +1,6 @@
 import React from "react";
 import {Img, interpolate, staticFile} from "remotion";
-import {FEED_CONFIG} from "../config";
+import {CARD_IMAGE_FILL, FEED_CONFIG} from "../config";
 import type {DocCard} from "../layout";
 import {revealEase} from "../motion/easing";
 
@@ -12,6 +12,9 @@ export type RevealState = {
 /**
  * Scroll-triggered fade-up reveal based on card top edge vs viewport.
  * Clamps to fully visible after reveal — no fade-out on exit.
+ *
+ * Thresholds are tuned so the "next" neighbor at a previous settle
+ * (top ≈ 0.68·H) stays near opacity 0; reveal runs during its own approach.
  */
 export const getRevealState = (
   screenY: number,
@@ -41,6 +44,9 @@ export const getRevealState = (
 /**
  * Outer: virtual-scroll document position.
  * Inner: opacity + fade-up reveal (does not affect scroll transform).
+ *
+ * Images use object-fit:contain — sources are ~1.60 AR inside a 16:9 frame.
+ * Cream fill avoids black letterboxing; no stretch, no cover crop.
  */
 export const FeedCard: React.FC<{
   card: DocCard;
@@ -66,6 +72,7 @@ export const FeedCard: React.FC<{
           width: "100%",
           height: "100%",
           overflow: "hidden",
+          backgroundColor: CARD_IMAGE_FILL,
           opacity: reveal.opacity,
           transform: `translate3d(0, ${reveal.translateY}px, 0)`,
         }}
@@ -75,7 +82,7 @@ export const FeedCard: React.FC<{
           style={{
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            objectFit: "contain",
             objectPosition: "center",
             display: "block",
           }}
